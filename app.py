@@ -5,6 +5,7 @@ from fileremover import FileRemover
 import giphy
 
 app = FlaskAPI(__name__)
+app.config.from_object('config')
 factory = GifFactory()
 file_remover = FileRemover()
 
