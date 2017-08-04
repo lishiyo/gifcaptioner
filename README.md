@@ -1,24 +1,35 @@
 # Giffer
 
-This is a proof of concept for an API for adding text to gif images.  Think of it as a mix between giphy and meme generator.
+Add a caption on top of a gif.
 
+See spec here: https://gifcaptioner.herokuapp.com/
+
+```
+GET /api/search
+  curl "http://127.0.0.1:5000/api/search?q=cats&limit=3&offset=1"
+
+POST /api/caption
+  curl -H "Content-Type: application/json" -X POST -d '{"text":"xyz","random":"corgis"}' http://127.0.0.1:5000/api/caption
+
+```
 #### Technology stack
-- Python 2.7
 - Flask w/ Flask-API for a pretty front end
 - moviepy
 
 ## Dependencies
-- Python
+- Python 3
 - Pip
 - Virtualenv (pip install virtualenv)
 
 ## Installation
 ```shell
-git clone https://github.com/m3brown/giffer
-cd giffer
+git clone https://github.com/lishiyo/gifcaptioner.git
+cd gifcaptioner
 virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
+// get a GIPHY api key
+// create config.py and add GIPHY_API_KEY in it
 python app.py
 ```
 

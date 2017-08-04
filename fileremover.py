@@ -14,3 +14,7 @@ class FileRemover(object):
         filepath = self.weak_references[wr]
         print('Deleting %s' % filepath)
         remove(filepath)
+
+    def remove_file(self, filepath):
+      print('Deleting %s' % filepath)
+      remove(filepath)
