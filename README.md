@@ -1,10 +1,8 @@
-# Giffer
+# Gifcaptioner
 
-Add a caption on top of a gif.
+A simple flask server to add a caption on top of a gif. Available online at: https://gifcaptioner.herokuapp.com/
 
-See spec here: https://gifcaptioner.herokuapp.com/
-
-```
+``
 GET /api/search
   curl "http://127.0.0.1:5000/api/search?q=cats&limit=3&offset=1"
 
@@ -12,38 +10,47 @@ POST /api/caption
   curl -H "Content-Type: application/json" -X POST -d '{"text":"xyz","random":"corgis"}' http://127.0.0.1:5000/api/caption
 
 ```
+
 #### Technology stack
-- Flask w/ Flask-API for a pretty front end
-- moviepy
+- Flask w/ Flask-API for a useful front end
+- moviepy for combining image and text
+- giphy api for searching gifs
 
-## Dependencies
+#### Dependencies
 - Python 3
-- Pip
-- Virtualenv (pip install virtualenv)
+- Pip 3
 
-## Installation
+## Development
 ```shell
 git clone https://github.com/lishiyo/gifcaptioner.git
 cd gifcaptioner
-virtualenv venv
-source venv/bin/activate
-pip install -r requirements.txt
+mkvirtualenv -p /usr/local/bin/python3 // OR virtualenv venv
+workon venv // OR source venv/bin/activate
+pip3 install -r requirements.txt
 // get a GIPHY api key
-// create config.py and add GIPHY_API_KEY in it
-python app.py
+// create config.py in root and add `GIPHY_API_KEY` in it
+python3 app.py
 ```
 
-## Using the app
-- After running `python app.py` you should be able to reach the site at localhost:5000
-- Create a gif by submitting a POST with JSON data.  At the least, you'll need `text` along with one of `gif` or `search`
-  - text: the text to put on the gif
-  - gif: URL of the gif image to use
-  - search: the search phrase to query from giphy
+## Usage
+- After running `python app.py` you should be able to reach the site at `localhost:5000`
+  - the prod site is not reliable atm due to the timeouts with heroku (TODO use )
+- Create a gif by POSTing to `localhost:5000` with JSON data. The data should contain a key for `text` along with *either* `gif` or `search`:
+  - `text`: the text to put on the gif
+  - `gif`: URL of the gif image to use
+  - `search`: a search phrase to query from giphy (will use a random gif from results)
   
-For example:
+Examples:
 ```json
-{"text": "time for work", "gif": "http://25.media.tumblr.com/tumblr_m810e8Cbd41ql4mgjo1_500.gif"}
+{
+  "text": "time for work", 
+  "gif": "http://25.media.tumblr.com/tumblr_m810e8Cbd41ql4mgjo1_500.gif"
+}
 ```
 ```json
-{"text": "hey guys", "search": "elf wave"}
+{
+  "text": "who's a good boy", 
+  "search": "cute doggies"
+}
 ```
+
