@@ -7,26 +7,12 @@ from random import randint
 import os
 from os.path import join, dirname
 
-app = FlaskAPI(__name__)
-
-# if 'HEROKU' in os.environ:
-#     debug = False
-#     # PROD
-#     from flask.ext.heroku import Heroku
-#     heroku = Heroku(app)
-# else:
-#     # DEV
-#     from dotenv import load_dotenv
-#     dotenv_path = join(dirname(__file__), '.env')
-#     load_dotenv(dotenv_path)
-#     app.config.update(
-#         GIPHY_API_KEY=os.environ.get("GIPHY_API_KEY")
-#     )
-
 # DEV
 from dotenv import load_dotenv
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
+
+app = FlaskAPI(__name__)
 app.config.update(
     GIPHY_API_KEY=os.environ.get("GIPHY_API_KEY")
 )
@@ -146,7 +132,7 @@ def print_guide():
     commands['text_width'] = 'Maximum width of text as percentage of image width [60]'
     samples = []
     samples.append({"text": "time for work", "gif": "http://25.media.tumblr.com/tumblr_m810e8Cbd41ql4mgjo1_500.gif"})
-    samples.append({"text": "hey guys", "search": "elf wave"})
+    samples.append({"text": "oh hai", "search": "cute cats"})
     return {"Command Guide": commands, "Samples": samples}
 
 if __name__ == '__main__':
