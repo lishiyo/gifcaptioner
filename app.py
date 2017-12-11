@@ -3,11 +3,15 @@ from flask import request, send_file, jsonify
 from gif_factory import GifFactory
 from fileremover import FileRemover
 import giphy
+from random import randint
 
 app = FlaskAPI(__name__)
 app.config.from_object('config')
 factory = GifFactory()
 file_remover = FileRemover()
+
+# constants
+LIMIT = 4
 
 @app.route('/', methods = ['GET', 'POST'])
 def giffer():
@@ -25,6 +29,10 @@ def giffer():
                 data['gif'] = giphy.search(app.config['GIPHY_API_KEY'], data['search'])
             data.pop('search')
             data.pop('search_type', None)
+
+        # clean up params
+        data.pop('limit', None)
+        data.pop('offset', None)
 
         # A bug in moviepy requires ver_align and hor_align to be string, not unicode
         # https://github.com/Zulko/moviepy/issues/293
@@ -56,8 +64,13 @@ def giffer():
 @app.route('/api/search', methods=['GET'])
 def search():
     args = request.args.to_dict()
-    limit = 4 # TODO: use later for pagination
-    offset = 0
+    if (args['limit'] and args['offset']):
+        limit = args['limit'] # TODO: use later for pagination
+        offset = args['offset']
+    else:
+        limit = LIMIT # TODO: use later for pagination
+        offset = randint(0, LIMIT-1)
+    
     resp = { "limit": limit, "offset": offset }
     resp["results"] = giphy.search(app.config['GIPHY_API_KEY'], args['q'], limit, offset)
     return jsonify(resp)
