@@ -11,12 +11,31 @@ POST /api/caption
 
 ```
 
-SCREENSHOTS
+#### Technology stack
+- Flask w/ Flask-API for a useful front end
+- moviepy for combining image and text
+- giphy api for searching gifs
 
+#### Dependencies
+- Python 3
+- Pip 3
+
+## Development
+```shell
+git clone https://github.com/lishiyo/gifcaptioner.git
+cd gifcaptioner
+mkvirtualenv -p /usr/local/bin/python3 // OR virtualenv venv
+workon venv // OR source venv/bin/activate
+pip3 install -r requirements.txt
+// get a GIPHY api key
+// create config.py in root and add `GIPHY_API_KEY` in it
+python3 app.py
+```
 
 ## Usage
-
-- Create a gif by POSTing to the root path (prod: https://gifcaptioner.herokuapp.com/ or dev: `localhost:5000`) with JSON data. The data should contain a key for `text` along with *either* `gif` or `search`:
+- After running `python app.py` you should be able to reach the site at `localhost:5000`
+  - the prod site is not reliable atm due to the timeouts with heroku (TODO use )
+- Create a gif by POSTing to `localhost:5000` with JSON data. The data should contain a key for `text` along with *either* `gif` or `search`:
   - `text`: the text to put on the gif
   - `gif`: URL of the gif image to use
   - `search`: a search phrase to query from giphy (will use a random gif from results)
@@ -35,24 +54,3 @@ Examples:
 }
 ```
 
-#### Technology stack
-- Flask w/ Flask-API for a useful front end
-- moviepy for combining image and text
-- giphy api for searching gifs
-
-## Dependencies
-- Python 3
-- Pip 3
-
-## Development
-```shell
-git clone https://github.com/lishiyo/gifcaptioner.git
-cd gifcaptioner
-mkvirtualenv -p /usr/local/bin/python3 // OR virtualenv venv
-workon venv // OR source venv/bin/activate
-pip3 install -r requirements.txt
-// get a GIPHY api key
-// create config.py in root and add `GIPHY_API_KEY` in it
-python app.py 
-// open at localhost:5000
-```
