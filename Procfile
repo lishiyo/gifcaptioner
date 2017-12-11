@@ -1,1 +1,1 @@
-web: gunicorn --log-level debug --timeout 120 app:app 
+web: gunicorn -k flask_sockets.worker app:app

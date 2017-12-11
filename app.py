@@ -6,6 +6,8 @@ import giphy
 from random import randint
 import os
 from os.path import join, dirname
+from flask_sockets import Sockets
+
 
 # DEV
 from dotenv import load_dotenv
@@ -16,6 +18,8 @@ app = FlaskAPI(__name__)
 app.config.update(
     GIPHY_API_KEY=os.environ.get("GIPHY_API_KEY")
 )
+app.debug = 'DEBUG' in os.environ
+sockets = Sockets(app)
 
 # app.config.from_object('config')
 factory = GifFactory()
@@ -24,8 +28,14 @@ file_remover = FileRemover()
 # constants
 LIMIT = 4
 
+@sockets.route('/echo')
+def echo_socket(ws):
+    while not ws.closed:
+        message = ws.receive()
+        ws.send(message)
+
 @app.route('/', methods = ['GET', 'POST'])
-def giffer():
+def gifcaptioner():
     if request.method == 'POST':
         data = request.data
         if 'gif' in data and 'search' in data:
@@ -136,4 +146,8 @@ def print_guide():
     return {"Command Guide": commands, "Samples": samples}
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    #app.run(debug=True, host='0.0.0.0')
+    from gevent import pywsgi
+    from geventwebsocket.handler import WebSocketHandler
+    server = pywsgi.WSGIServer(('', 5000), app, handler_class=WebSocketHandler)
+    server.serve_forever()
