@@ -31,7 +31,7 @@ mkvirtualenv -p /usr/local/bin/python3 // OR virtualenv venv
 workon venv // OR source venv/bin/activate
 pip3 install -r requirements.txt
 // get a GIPHY api key
-// create config.py in root and add `GIPHY_API_KEY` in it
+// create .env in root and add `GIPHY_API_KEY` in it
 python3 app.py
 ```
 

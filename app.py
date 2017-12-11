@@ -4,9 +4,34 @@ from gif_factory import GifFactory
 from fileremover import FileRemover
 import giphy
 from random import randint
+import os
+from os.path import join, dirname
 
 app = FlaskAPI(__name__)
-app.config.from_object('config')
+
+# if 'HEROKU' in os.environ:
+#     debug = False
+#     # PROD
+#     from flask.ext.heroku import Heroku
+#     heroku = Heroku(app)
+# else:
+#     # DEV
+#     from dotenv import load_dotenv
+#     dotenv_path = join(dirname(__file__), '.env')
+#     load_dotenv(dotenv_path)
+#     app.config.update(
+#         GIPHY_API_KEY=os.environ.get("GIPHY_API_KEY")
+#     )
+
+# DEV
+from dotenv import load_dotenv
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+app.config.update(
+    GIPHY_API_KEY=os.environ.get("GIPHY_API_KEY")
+)
+
+# app.config.from_object('config')
 factory = GifFactory()
 file_remover = FileRemover()
 
