@@ -25,9 +25,7 @@ class GifFactory(object):
         clip = VideoFileClip(original_gif_file)
         # Generate a text clip. You can customize the font, color, etc.
         txt_size = [clip.size[0]*text_width/100, clip.size[1]*text_height/100]
-        txt_clip = TextClip(text, color='white', size=txt_size, method="caption",
-                            font=".fonts/unicode.impact.ttf", stroke_color='black',
-                            stroke_width=1)
+        txt_clip = TextClip(text, color='white', size=txt_size, method="caption", font="Helvetica", stroke_color='black', stroke_width=1)
 
         txt_clip = txt_clip.set_position((hor_align, ver_align)).set_duration(clip.duration)
 
