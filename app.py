@@ -1,5 +1,5 @@
 from flask.ext.api import FlaskAPI, exceptions
-from flask import request, send_file, jsonify
+from flask import Flask, request, send_file, jsonify, render_template
 from gif_factory import GifFactory
 from fileremover import FileRemover
 import giphy
@@ -7,18 +7,24 @@ from random import randint
 import os
 from os.path import join, dirname
 from flask_sockets import Sockets
-
+import gevent
+from gevent import pywsgi
+from geventwebsocket.handler import WebSocketHandler
+import json
+import sys
+import io
+import base64
 
 # DEV
 from dotenv import load_dotenv
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-app = FlaskAPI(__name__)
+# app = FlaskAPI(__name__)
+app = Flask(__name__)
 app.config.update(
     GIPHY_API_KEY=os.environ.get("GIPHY_API_KEY")
 )
-app.debug = 'DEBUG' in os.environ
 sockets = Sockets(app)
 
 # app.config.from_object('config')
@@ -28,16 +34,29 @@ file_remover = FileRemover()
 # constants
 LIMIT = 4
 
-@sockets.route('/echo')
-def echo_socket(ws):
+@sockets.route('/submit')
+def inbox(ws):
     while not ws.closed:
+        # ws.send("submit hit")
         message = ws.receive()
         ws.send(message)
+        gevent.sleep(0.1)
+       
+
+@sockets.route('/receive')
+def outbox(ws):
+    while not ws.closed:
+        # ws.send("receive hit")
+        message = ws.receive()
+        ws.send(message)
+        gevent.sleep(0.1)
 
 @app.route('/', methods = ['GET', 'POST'])
 def gifcaptioner():
     if request.method == 'POST':
-        data = request.data
+        data = request.get_json()
+        print(" === DATA ==== {}".format(data, file=sys.stderr))
+
         if 'gif' in data and 'search' in data:
             raise exceptions.ParseError
         if 'gif' not in data and 'search' not in data:
@@ -63,12 +82,22 @@ def gifcaptioner():
 
         gif_file = factory.create(**data)
         resp = send_file(gif_file, mimetype='image/gif')
+        # resp = base64.b64encode(open(gif_file, 'rb').read())
+        
+        # with open(gif_file, 'rb') as bites:
+        #     return send_file(
+        #             io.BytesIO(bites.read()),
+        #             attachment_filename='logo.jpeg',
+        #             mimetype='image/gif'
+        #     )
+
         # delete the file after it's sent
         # http://stackoverflow.com/questions/13344538/how-to-clean-up-temporary-file-used-with-send-file
-        file_remover.cleanup_once_done(resp, gif_file)
+        # file_remover.cleanup_once_done(resp, gif_file)
         return resp
     else:
-        return print_guide()
+        return render_template('index.html')
+        # return print_guide()
 
 # GET /api/search?q=cats&offset=4 => hits giphy's /search api
 # @return { 
@@ -143,11 +172,10 @@ def print_guide():
     samples = []
     samples.append({"text": "time for work", "gif": "http://25.media.tumblr.com/tumblr_m810e8Cbd41ql4mgjo1_500.gif"})
     samples.append({"text": "oh hai", "search": "cute cats"})
-    return {"Command Guide": commands, "Samples": samples}
+    return { "Command Guide": commands, "Samples": samples }
 
 if __name__ == '__main__':
     #app.run(debug=True, host='0.0.0.0')
-    from gevent import pywsgi
-    from geventwebsocket.handler import WebSocketHandler
+   
     server = pywsgi.WSGIServer(('', 5000), app, handler_class=WebSocketHandler)
     server.serve_forever()
