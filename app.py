@@ -6,6 +6,7 @@ import giphy
 from random import randint
 import os
 from os.path import join, dirname
+import requests
 
 # DEV
 from dotenv import load_dotenv
@@ -52,11 +53,23 @@ def giffer():
                 data[key] = str(data[key])
 
         gif_file = factory.create(**data)
-        resp = send_file(gif_file, mimetype='image/gif')
+
+        # upload it to file.io for temp storage (2 weeks)
+        url = 'https://file.io/'
+        files = {'file': open(gif_file, 'rb')}
+        res = requests.post(url, files=files)
+        # res_json = res.json()
+        
+        uploaded_url = res.json()['link']
+        print('response from server: {} === uploaded_url === {} === '.format(res.text, uploaded_url))
+      
+        # resp = send_file(gif_file, mimetype='image/gif')
         # delete the file after it's sent
         # http://stackoverflow.com/questions/13344538/how-to-clean-up-temporary-file-used-with-send-file
-        file_remover.cleanup_once_done(resp, gif_file)
-        return resp
+        file_remover.cleanup_once_done(res, gif_file)
+
+        return print_url(uploaded_url)
+        # return resp
     else:
         return print_guide()
 
@@ -119,6 +132,9 @@ def caption():
     file_remover.remove_file(gif_file)
     
     return resp
+
+def print_url(url):
+    return { "download_url": url }
 
 def print_guide():
     commands = {}
