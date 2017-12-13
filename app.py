@@ -1,5 +1,5 @@
 from flask.ext.api import FlaskAPI, exceptions
-from flask import request, send_file, jsonify
+from flask import request, send_file, jsonify, url_for, redirect
 from gif_factory import GifFactory
 from fileremover import FileRemover
 import giphy
@@ -7,6 +7,11 @@ from random import randint
 import os
 from os.path import join, dirname
 import requests
+
+# worker
+from rq import Queue, get_current_job
+from worker import conn
+q = Queue(connection=conn)
 
 # DEV
 from dotenv import load_dotenv
@@ -24,9 +29,43 @@ file_remover = FileRemover()
 
 # constants
 LIMIT = 4
+UPLOAD_FILE_URL = 'https://file.io/' 
+
+def enqueueCaptionTask(data):
+   # create the captioned gif
+    gif_file = factory.create(**data)
+
+    # upload it to file.io for temp storage (2 weeks)
+    files = {'file': open(gif_file, 'rb')}
+    res = requests.post(UPLOAD_FILE_URL, files=files)
+    
+    # uploaded_url = res.json()['link']
+    # print('response from server: {} === uploaded_url === {} === '.format(res.text, uploaded_url))
+
+    # resp = send_file(gif_file, mimetype='image/gif')
+    # delete the file after it's sent
+    # http://stackoverflow.com/questions/13344538/how-to-clean-up-temporary-file-used-with-send-file
+    file_remover.cleanup_once_done(res, gif_file)
+    return res.json()
+
+@app.route('/status/<job_id>')
+def job_status(job_id):
+    job = q.fetch_job(job_id)
+    if job is None:
+        response = {'status': 'unknown'}
+    else:
+        job.refresh()
+        response = {
+            'status': job.get_status(),
+            'result': job.result,
+        }
+        if job.is_failed:
+            response['message'] = job.exc_info.strip().split('\n')[-1]
+        
+    return jsonify(response)
 
 @app.route('/', methods = ['GET', 'POST'])
-def giffer():
+def gifcaptioner():
     if request.method == 'POST':
         data = request.data
         if 'gif' in data and 'search' in data:
@@ -52,24 +91,11 @@ def giffer():
             if key in data and type(data[key]) == unicode:
                 data[key] = str(data[key])
 
-        gif_file = factory.create(**data)
+        # enqueue the image creation task
+        job = q.enqueue(enqueueCaptionTask, data, result_ttl=10000)
 
-        # upload it to file.io for temp storage (2 weeks)
-        url = 'https://file.io/'
-        files = {'file': open(gif_file, 'rb')}
-        res = requests.post(url, files=files)
-        # res_json = res.json()
-        
-        uploaded_url = res.json()['link']
-        print('response from server: {} === uploaded_url === {} === '.format(res.text, uploaded_url))
-      
-        # resp = send_file(gif_file, mimetype='image/gif')
-        # delete the file after it's sent
-        # http://stackoverflow.com/questions/13344538/how-to-clean-up-temporary-file-used-with-send-file
-        file_remover.cleanup_once_done(res, gif_file)
-
-        return print_url(uploaded_url)
-        # return resp
+        # return jsonify({}), 202, { 'Location': url_for('job_status',job_id=job.get_id())}
+        return redirect(url_for('job_status', job_id=job.get_id()), code=202)
     else:
         return print_guide()
 
