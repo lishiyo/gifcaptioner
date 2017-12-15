@@ -2,7 +2,7 @@
 
 A simple flask server to add a caption on top of a gif. Demo and docs at: https://gifcaptioner.herokuapp.com/
 
-![screenshot](https://media.giphy.com/media/3ohs7SIXVLf9HkE1HO/giphy.gif) ![screenshot](https://media.giphy.com/media/xT0xehettm94WhYamk/giphy.gif)
+<img src=https://media.giphy.com/media/3ohs7SIXVLf9HkE1HO/giphy.gif width=330> <img src=https://media.giphy.com/media/xT0xehettm94WhYamk/giphy.gif width=330>
 
 ```
 GET /api/search
@@ -30,7 +30,7 @@ curl http://127.0.0.1:5000/status/ec101759-438e-44fc-8a3a-ddf09f6418a2
 curl https://file.io/gnLuV4 --output output.gif
 ```
 
-## Development
+#### Development
 ```shell
 git clone https://github.com/lishiyo/gifcaptioner.git
 cd gifcaptioner
@@ -43,8 +43,8 @@ python3 app.py
 // open at localhost:5000
 ```
 
-## Usage
-- [online demo](https://gifcaptioner.herokuapp.com/)
+#### Usage
+[online demo](https://gifcaptioner.herokuapp.com/):
 - Create a gif by POSTing to filling the form with JSON data. The data should contain a key for `text` along with one of either `gif` or `search`:
   - `text`: the text to put on the gif
   - `gif`: (optional) URL of the gif image to use
