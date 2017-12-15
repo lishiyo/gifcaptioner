@@ -30,20 +30,7 @@ curl http://127.0.0.1:5000/status/ec101759-438e-44fc-8a3a-ddf09f6418a2
 curl https://file.io/gnLuV4 --output output.gif
 ```
 
-#### Development
-```shell
-git clone https://github.com/lishiyo/gifcaptioner.git
-cd gifcaptioner
-mkvirtualenv -p /usr/local/bin/python3 // OR virtualenv venv
-workon venv // OR source venv/bin/activate
-pip3 install -r requirements.txt
-// get a GIPHY api key
-// create config.py in root and add `GIPHY_API_KEY` in it
-python3 app.py
-// open at localhost:5000
-```
-
-#### Usage
+## Usage
 [online demo](https://gifcaptioner.herokuapp.com/):
 - Create a gif by POSTing to filling the form with JSON data. The data should contain a key for `text` along with one of either `gif` or `search`:
   - `text`: the text to put on the gif
@@ -65,6 +52,19 @@ Examples
 ```
 
 - This redirects to the job status page. Wait a few seconds then refresh, should see a result with a one-time file.io `link` to download, ex `https://file.io/wtr13C`.
+
+## Development
+```shell
+git clone https://github.com/lishiyo/gifcaptioner.git
+cd gifcaptioner
+mkvirtualenv -p /usr/local/bin/python3 // OR virtualenv venv
+workon venv // OR source venv/bin/activate
+pip3 install -r requirements.txt
+// get a GIPHY api key
+// create config.py in root and add `GIPHY_API_KEY` in it
+python3 app.py
+// open at localhost:5000
+```
 
 #### Technology stack
 - Flask w/ Flask-API for a useful front end
