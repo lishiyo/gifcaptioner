@@ -95,7 +95,7 @@ def gifcaptioner():
         job = q.enqueue(enqueueCaptionTask, data, result_ttl=10000)
 
         # return jsonify({}), 202, { 'Location': url_for('job_status',job_id=job.get_id())}
-        return redirect(url_for('job_status', job_id=job.get_id()), code=202)
+        return redirect(url_for('job_status', job_id=job.get_id()))
     else:
         return print_guide()
 
@@ -131,15 +131,15 @@ def search():
 def caption():
     data = request.data
     # either `url: '*.gif'` or `random: 'blah'` to hit translation api 
-    if 'url' in data and 'random' in data:
+    if 'url' in data and 'search' in data:
         raise exceptions.ParseError
-    if 'url' not in data and 'random' not in data:
+    if 'url' not in data and 'search' not in data:
         raise exceptions.ParseError
     if 'text' not in data:
         raise exceptions.ParseError
 
-    if 'random' in data: # get random gif, defaulting to translate api
-        query = data['random']
+    if 'search' in data: # get random gif, defaulting to translate api
+        query = data['search']
         if 'search_type' in data and data['search_type'] == 'search':
             data['url'] = giphy.search(app.config['GIPHY_API_KEY'], query)
         else:
@@ -150,17 +150,12 @@ def caption():
             data[key] = str(data[key])
 
     filtered = dict([('gif', data['url']), ('text', data['text'])])
-    gif_file = factory.create(**filtered)
+    # gif_file = factory.create(**filtered)
 
-    # this sends *.gif NOT json
-    resp = send_file(gif_file, mimetype='image/gif')
+    # enqueue the image creation task
+    job = q.enqueue(enqueueCaptionTask, filtered, result_ttl=5000)
 
-    file_remover.remove_file(gif_file)
-    
-    return resp
-
-def print_url(url):
-    return { "download_url": url }
+    return jsonify({ 'redirect': url_for('job_status', job_id=job.get_id()) })
 
 def print_guide():
     commands = {}
