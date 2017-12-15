@@ -2,7 +2,7 @@
 
 A simple flask server to add a caption on top of a gif. Demo and docs at: https://gifcaptioner.herokuapp.com/
 
-<img src=https://media.giphy.com/media/3ohs7SIXVLf9HkE1HO/giphy.gif height=300> <img src=https://media.giphy.com/media/xT0xehettm94WhYamk/giphy.gif height=300>
+<img src=https://media.giphy.com/media/3ohs7SIXVLf9HkE1HO/giphy.gif height=275> <img src=https://media.giphy.com/media/xT0xehettm94WhYamk/giphy.gif height=275>
 
 ```
 GET /api/search
