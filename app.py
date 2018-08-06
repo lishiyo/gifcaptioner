@@ -1,8 +1,8 @@
 from flask_api import FlaskAPI, status, exceptions
 from flask import request, send_file, jsonify, url_for, redirect
-from gif_factory import GifFactory
-from fileremover import FileRemover
-import giphy
+from app.gif_factory import GifFactory
+from app.fileremover import FileRemover
+from app import giphy
 from random import randint
 import os
 from os.path import join, dirname
@@ -10,7 +10,7 @@ import requests
 
 # Redis - set up queue
 from rq import Queue, get_current_job, get_failed_queue
-from worker import conn
+from app.worker import conn
 q = Queue(connection=conn)
 # Cleanup first
 failed_q = get_failed_queue(connection=conn)

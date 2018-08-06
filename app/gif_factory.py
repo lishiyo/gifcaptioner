@@ -4,7 +4,7 @@ from tempfile import gettempdir
 from urllib.request import urlretrieve
 import os
 import uuid
-from fileremover import FileRemover
+from app import fileremover as FileRemover
 import requests
 
 class GifFactory(object):
