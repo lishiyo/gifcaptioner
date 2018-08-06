@@ -1,10 +1,15 @@
+"""
+app.gif_factory
+~~~~~~~~~~~~~~
+"""
+
 # Import everything needed to edit video clips
 from moviepy.editor import *
 from tempfile import gettempdir
 from urllib.request import urlretrieve
 import os
 import uuid
-from app import fileremover as FileRemover
+from fileremover import FileRemover
 import requests
 
 class GifFactory(object):

@@ -1,3 +1,8 @@
+"""
+app.fileremover
+~~~~~~~~~~~~~~
+"""
+
 from os import remove
 import tempfile
 import weakref

@@ -1,0 +1,18 @@
+{%- extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block app %}
+      <div class="panel panel-default" style="background:black">
+        <!-- Default panel contents -->
+        <div class="panel-heading">Select task to run</div>
+        <div class="panel-body">
+          <div class="col-md-3">
+            hello: {{ data }}
+          </div>
+        </div>
+      </div>
+{% endblock %}
+
+{% block app_scripts %}
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

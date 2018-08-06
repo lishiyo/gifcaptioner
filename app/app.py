@@ -1,16 +1,17 @@
 from flask_api import FlaskAPI, status, exceptions
-from flask import request, send_file, jsonify, url_for, redirect
-from app.gif_factory import GifFactory
-from app.fileremover import FileRemover
-from app import giphy
+from flask import request, send_file, jsonify, url_for, redirect, render_template, Blueprint, flash
+from gif_factory import GifFactory
+from fileremover import FileRemover
+import giphy
 from random import randint
 import os
 from os.path import join, dirname
 import requests
+from flask_bootstrap import Bootstrap
 
 # Redis - set up queue
 from rq import Queue, get_current_job, get_failed_queue
-from app.worker import conn
+from worker import conn
 q = Queue(connection=conn)
 # Cleanup first
 failed_q = get_failed_queue(connection=conn)
@@ -18,17 +19,19 @@ failed_q.delete(delete_jobs=True)
 
 # DEV
 from dotenv import load_dotenv
-dotenv_path = join(dirname(__file__), '.env')
+dotenv_path = join(dirname(__file__), '..', '.env')
 load_dotenv(dotenv_path)
 
+# INIT
 app = FlaskAPI(__name__)
 app.config.update(
     GIPHY_API_KEY=os.environ.get("GIPHY_API_KEY")
 )
-
-# app.config.from_object('config')
+Bootstrap(app)
 file_remover = FileRemover()
 factory = GifFactory(file_remover)
+
+bp = Blueprint('main', __name__)
 
 # constants
 LIMIT = 4
@@ -50,7 +53,12 @@ def job_status(job_id):
         
     return jsonify(response)
 
-@app.route('/', methods = ['GET', 'POST'])
+@bp.route('/')
+def index():
+    return render_template('index.html', data="hello world")
+
+# Entry point - POST to form
+@app.route('/', methods = ['POST'])
 def gifcaptioner():
     if request.method == 'POST':
         data = request.data
@@ -74,8 +82,8 @@ def gifcaptioner():
         # enqueue the image creation task
         job = q.enqueue(factory.enqueueCaptionTask, data, UPLOAD_FILE_URL, result_ttl=10000)
 
-        # return jsonify({}), 202, { 'Location': url_for('job_status',job_id=job.get_id())}
-        return redirect(url_for('job_status', job_id=job.get_id()))
+        return jsonify({}), 202, { 'Location': url_for('job_status',job_id=job.get_id())}
+        # return redirect(url_for('job_status', job_id=job.get_id()))
     else:
         return print_guide()
 
@@ -148,5 +156,9 @@ def print_guide():
     samples.append({"text": "oh hai", "search": "cute cats"})
     return {"Command Guide": commands, "Samples": samples}
 
+app.register_blueprint(bp)
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
+
+
