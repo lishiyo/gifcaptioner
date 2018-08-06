@@ -1,4 +1,3 @@
-# from flask.ext.api import FlaskAPI, exceptions
 from flask_api import FlaskAPI, status, exceptions
 from flask import request, send_file, jsonify, url_for, redirect
 from gif_factory import GifFactory
