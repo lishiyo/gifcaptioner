@@ -57,13 +57,21 @@ Examples
 ```shell
 git clone https://github.com/lishiyo/gifcaptioner.git
 cd gifcaptioner
-mkvirtualenv -p /usr/local/bin/python3 // OR virtualenv venv
-workon venv // OR source venv/bin/activate
+mkvirtualenv -p $(which python3) gifcaptioner // OR virtualenv gifcaptioner
+workon gifcaptioner // OR source venv/bin/activate
 pip3 install -r requirements.txt
 // get a GIPHY api key
 // create .env in root and add `GIPHY_API_KEY` in it
 python3 app.py
 // open at localhost:5000
+
+// Get redis up! In other terminal windows (remember `workon gifcaptioner` first), run:
+redis-server
+rq-worker
+
+// To see your queues
+rq-dashboard 
+// open at http://0.0.0.0:9181/
 ```
 
 #### Technology stack

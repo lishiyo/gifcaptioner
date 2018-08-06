@@ -1,4 +1,5 @@
-from flask.ext.api import FlaskAPI, exceptions
+# from flask.ext.api import FlaskAPI, exceptions
+from flask_api import FlaskAPI, status, exceptions
 from flask import request, send_file, jsonify, url_for, redirect
 from gif_factory import GifFactory
 from fileremover import FileRemover
@@ -8,10 +9,13 @@ import os
 from os.path import join, dirname
 import requests
 
-# worker
-from rq import Queue, get_current_job
+# Redis - set up queue
+from rq import Queue, get_current_job, get_failed_queue
 from worker import conn
 q = Queue(connection=conn)
+# Cleanup first
+failed_q = get_failed_queue(connection=conn)
+failed_q.delete(delete_jobs=True)
 
 # DEV
 from dotenv import load_dotenv
@@ -24,29 +28,12 @@ app.config.update(
 )
 
 # app.config.from_object('config')
-factory = GifFactory()
 file_remover = FileRemover()
+factory = GifFactory(file_remover)
 
 # constants
 LIMIT = 4
 UPLOAD_FILE_URL = 'https://file.io/' 
-
-def enqueueCaptionTask(data):
-   # create the captioned gif
-    gif_file = factory.create(**data)
-
-    # upload it to file.io for temp storage (2 weeks)
-    files = {'file': open(gif_file, 'rb')}
-    res = requests.post(UPLOAD_FILE_URL, files=files)
-    
-    # uploaded_url = res.json()['link']
-    # print('response from server: {} === uploaded_url === {} === '.format(res.text, uploaded_url))
-
-    # resp = send_file(gif_file, mimetype='image/gif')
-    # delete the file after it's sent
-    # http://stackoverflow.com/questions/13344538/how-to-clean-up-temporary-file-used-with-send-file
-    file_remover.cleanup_once_done(res, gif_file)
-    return res.json()
 
 @app.route('/status/<job_id>')
 def job_status(job_id):
@@ -85,14 +72,8 @@ def gifcaptioner():
         data.pop('limit', None)
         data.pop('offset', None)
 
-        # A bug in moviepy requires ver_align and hor_align to be string, not unicode
-        # https://github.com/Zulko/moviepy/issues/293
-        for key in ['hor_align', 'ver_align']:
-            if key in data and type(data[key]) == unicode:
-                data[key] = str(data[key])
-
         # enqueue the image creation task
-        job = q.enqueue(enqueueCaptionTask, data, result_ttl=10000)
+        job = q.enqueue(factory.enqueueCaptionTask, data, UPLOAD_FILE_URL, result_ttl=10000)
 
         # return jsonify({}), 202, { 'Location': url_for('job_status',job_id=job.get_id())}
         return redirect(url_for('job_status', job_id=job.get_id()))
@@ -145,15 +126,11 @@ def caption():
         else:
             data['url'] = giphy.translate(app.config['GIPHY_API_KEY'], query)
 
-    for key in ['hor_align', 'ver_align']:
-        if key in data and type(data[key]) == unicode:
-            data[key] = str(data[key])
-
     filtered = dict([('gif', data['url']), ('text', data['text'])])
     # gif_file = factory.create(**filtered)
 
     # enqueue the image creation task
-    job = q.enqueue(enqueueCaptionTask, filtered, result_ttl=5000)
+    job = q.enqueue(factory.enqueueCaptionTask, filtered, UPLOAD_FILE_URL, result_ttl=5000)
 
     return jsonify({ 'redirect': url_for('job_status', job_id=job.get_id()) })
 

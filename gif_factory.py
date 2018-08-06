@@ -4,18 +4,14 @@ from tempfile import gettempdir
 from urllib.request import urlretrieve
 import os
 import uuid
-
+from fileremover import FileRemover
+import requests
 
 class GifFactory(object):
 
-    def __init__(self):
+    def __init__(self, file_remover):
         self.tempdir = gettempdir() + '/'
-
-    def _download_gif(self, url):
-        filename = self.tempdir + str(uuid.uuid4()) + '.gif'
-        urlretrieve(url, filename)
-        # TODO should confirm this is a gif image...
-        return filename
+        self.file_remover = file_remover
 
     def create(self, text, gif,
                hor_align='center', ver_align='top',
@@ -37,4 +33,27 @@ class GifFactory(object):
         # Write the result to a file
         filename = self.tempdir + str(uuid.uuid4()) + '.gif'
         video.write_gif(filename)
+        return filename
+    
+    def enqueueCaptionTask(self, data, upload_url):
+        # create the captioned gif
+        gif_file = self.create(**data)
+
+        # upload it to file.io for temp storage (2 weeks)
+        files = {'file': open(gif_file, 'rb')}
+        res = requests.post(upload_url, files=files)
+        
+        # uploaded_url = res.json()['link']
+        # print('response from server: {} === uploaded_url === {} === '.format(res.text, uploaded_url))
+
+        # resp = send_file(gif_file, mimetype='image/gif')
+        # delete the file after it's sent
+        # http://stackoverflow.com/questions/13344538/how-to-clean-up-temporary-file-used-with-send-file
+        self.file_remover.cleanup_once_done(res, gif_file)
+        return res.json()
+
+    def _download_gif(self, url):
+        filename = self.tempdir + str(uuid.uuid4()) + '.gif'
+        urlretrieve(url, filename)
+        # TODO should confirm this is a gif image...
         return filename
