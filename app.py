@@ -10,6 +10,7 @@ import requests
 
 # Redis - set up queue
 from rq import Queue, get_current_job, get_failed_queue
+from rq.job import Job, JobStatus
 from worker import conn
 q = Queue(connection=conn)
 # Cleanup first
@@ -47,9 +48,18 @@ def job_status(job_id):
         }
         if job.is_failed:
             response['message'] = job.exc_info.strip().split('\n')[-1]
-        
-    return jsonify(response)
+    
+    if response['status'] == JobStatus.FINISHED:
+        message = 'done! download the link at: {}'.format(job.result['link'])
+    elif response['status'] == JobStatus.QUEUED or response['status'] == JobStatus.STARTED:
+        message = 'pending - please refresh in a few seconds'
+    elif response['status'] == JobStatus.FAILED or response['status'] == 'unknown':
+        message = 'oh no, something went wrong'
+    else:
+        message = jsonify(response)
 
+    return message
+    
 @app.route('/', methods = ['GET', 'POST'])
 def gifcaptioner():
     if request.method == 'POST':

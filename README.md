@@ -67,7 +67,7 @@ python3 app.py
 
 // Get redis up! In other terminal windows (remember `workon gifcaptioner` first), run:
 redis-server
-rq-worker
+rq worker
 
 // To see your queues
 rq-dashboard 
