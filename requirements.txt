@@ -24,7 +24,7 @@ mccabe==0.6.1
 moviepy==0.2.3.5
 numpy==1.15.0
 pew==1.1.1
-Pillow==5.2.0
+Pillow==6.2.0
 pipenv==9.0.0
 pycodestyle==2.3.1
 pyflakes==1.6.0
