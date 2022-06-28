@@ -1,4 +1,4 @@
-arrow==0.12.1
+arrow==0.15.1
 astroid==2.0.2
 certifi==2017.11.5
 chardet==3.0.4
